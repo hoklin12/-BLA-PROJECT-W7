@@ -46,19 +46,43 @@ class _RidePrefFormState extends State<RidePrefForm> {
   @override
   void initState() {
     super.initState();
+    _initializeForm(widget.initialPreference);
+    
 
-    if (widget.initialPreference != null) {
-      RidePreference current = widget.initialPreference!;
-      departure = current.departure;
-      arrival = current.arrival;
-      departureDate = current.departureDate;
-      requestedSeats = current.requestedSeats;
+    // if (widget.initialPreference != null) {
+    //   RidePreference current = widget.initialPreference!;
+    //   departure = current.departure;
+    //   arrival = current.arrival;
+    //   departureDate = current.departureDate;
+    //   requestedSeats = current.requestedSeats;
+    // } else {
+    //   // If no given preferences, we select default ones :
+    //   departure = null; // User shall select the departure
+    //   departureDate = DateTime.now(); // Now  by default
+    //   arrival = null; // User shall select the arrival
+    //   requestedSeats = 1; // 1 seat book by default
+    // }
+  }
+  @override
+  void didUpdateWidget(RidePrefForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only update if the initialPreference has changed
+    if (widget.initialPreference != oldWidget.initialPreference) {
+      _initializeForm(widget.initialPreference);
+    }
+  }
+
+  void _initializeForm(RidePreference? preference) {
+    if (preference != null) {
+      departure = preference.departure;
+      arrival = preference.arrival;
+      departureDate = preference.departureDate;
+      requestedSeats = preference.requestedSeats;
     } else {
-      // If no given preferences, we select default ones :
-      departure = null; // User shall select the departure
-      departureDate = DateTime.now(); // Now  by default
-      arrival = null; // User shall select the arrival
-      requestedSeats = 1; // 1 seat book by default
+      departure = null;
+      departureDate = DateTime.now();
+      arrival = null;
+      requestedSeats = 1;
     }
   }
 
