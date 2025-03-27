@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:week_3_blabla_project/Provider/Rides_Prefs_Provider.dart';
+import 'package:week_3_blabla_project/ui/Provider/Rides_Prefs_Provider.dart';
 
 import '../../../model/ride/ride_pref.dart';
 import '../../../service/ride_prefs_service.dart';
@@ -96,7 +96,7 @@ class RidePrefScreen extends StatelessWidget {
           // If the state is success, display the screen as normal
           RidePreference? currentRidePreference =
               RidesPreferencesProvider.currentPreference;
-          List<RidePreference> pastPreferences = pastPreferencesState.data!;
+          List<RidePreference> pastPreferences = pastPreferencesState.data!.reversed.toList();
         
 return Stack(
             children: [

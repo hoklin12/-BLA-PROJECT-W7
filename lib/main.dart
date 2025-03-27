@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:week_3_blabla_project/data/repository/local/local_Ride_Pref_Repository.dart';
 import 'package:week_3_blabla_project/ui/Provider/Rides_Prefs_Provider.dart';
 import 'data/repository/mock/mock_locations_repository.dart';
 import 'data/repository/mock/mock_rides_repository.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider (
       providers: [
-        ChangeNotifierProvider(create: (context) => RidesPreferencesProvider(repository: MockRidePreferencesRepository())),
+        ChangeNotifierProvider(create: (context) => RidesPreferencesProvider(repository: LocalRidePreferencesRepository())),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
