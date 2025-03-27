@@ -15,7 +15,35 @@ import 'package:provider/provider.dart';
 
 const String blablaHomeImagePath = 'assets/images/blabla_home.png';
 
+const String blablaWifiImagePath = 'assets/images/blabla_wifi.png';
 
+class BlaError extends StatelessWidget {
+  const BlaError({super.key, required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Padding(
+      padding: const EdgeInsets.only(left: BlaSpacings.m, right: BlaSpacings.m, top: BlaSpacings.s),
+      child: Center(
+        child: Column(
+          children: [
+            Image.asset(
+              blablaWifiImagePath,
+              fit: BoxFit.none, // Adjust image fit to cover the container
+            ),
+            Text(
+              message,
+              style: BlaTextStyles.heading.copyWith(color: BlaColors.textNormal),
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+}
 
 class BlaBackground extends StatelessWidget {
 
@@ -38,10 +66,10 @@ class BlaBackground extends StatelessWidget {
 class RidePrefScreen extends StatelessWidget {
   const RidePrefScreen({super.key});
 
-    void _onRidePrefSelected(BuildContext context,RidePreference newPreference) async {
+    Future<void> _onRidePrefSelected(BuildContext context,RidePreference newPreference) async {
     // 1 - Update the current preference
     // RidePrefService.instance.setCurrentPreference(newPreference);
-    context.read<RidesPreferencesProvider>().setCurrentPreferrence(newPreference);
+    context.read<RidesPreferencesProvider>().setCurrentPreference(newPreference);
 
     // 2 - Navigate to the rides screen (with a buttom to top animation)
     await Navigator.of(context)
@@ -55,63 +83,80 @@ class RidePrefScreen extends StatelessWidget {
   Widget build(BuildContext context) {
    return Consumer<RidesPreferencesProvider>(
     // Get current preference and history from provider
-      builder: (context, RidesPreferencesProvider, child){
-        final RidePreference? currentRidePreference = RidesPreferencesProvider.currentPreference;
-        final List<RidePreference> pastPreferences =
-        RidesPreferencesProvider.preferencesHistory;
+      builder: (context, RidesPreferencesProvider, child) {
+
+        final pastPreferencesState = RidesPreferencesProvider.pastPreferencesState;
+
+        if (pastPreferencesState.isLoading) {
+          return const BlaError(message: 'loading');
+        } else if (pastPreferencesState.isError) {
+          return const BlaError(message: 'No connection. Try later');
+        } else if (pastPreferencesState.isSuccess &&
+            pastPreferencesState.data != null) {
+          // If the state is success, display the screen as normal
+          RidePreference? currentRidePreference =
+              RidesPreferencesProvider.currentPreference;
+          List<RidePreference> pastPreferences = pastPreferencesState.data!;
         
-        return Stack(
-          children: [
-            // 1 - Background  Image
-            BlaBackground(),
+return Stack(
+            children: [
+              // 1 - Background Image
+              const BlaBackground(),
 
-            // 2 - Foreground content
-            Column(
-              children: [
-                SizedBox(height: BlaSpacings.m),
-                Text(
-                  "Your pick of rides at low price",
-                  style: BlaTextStyles.heading.copyWith(color: Colors.white),
-                ),
-                SizedBox(height: 100),
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: BlaSpacings.xxl),
-                  decoration: BoxDecoration(
-                    color: Colors.white, // White background
-                    borderRadius: BorderRadius.circular(16), // Rounded corners
+              // 2 - Foreground content
+              Column(
+                children: [
+                  const SizedBox(height: BlaSpacings.m),
+                  Text(
+                    "Your pick of rides at low price",
+                    style: BlaTextStyles.heading.copyWith(color: Colors.white),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // 2.1 Display the Form to input the ride preferences
-                      RidePrefForm(
+                  const SizedBox(height: 100),
+                  Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: BlaSpacings.xxl),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // 2.1 Display the Form to input the ride preferences
+                        RidePrefForm(
                           initialPreference: currentRidePreference,
-                          onSubmit: (pref) => _onRidePrefSelected(context,pref)),
-                      SizedBox(height: BlaSpacings.m),
+                          onSubmit: (newPreference) =>
+                              _onRidePrefSelected(context, newPreference),
+                        ),
+                        const SizedBox(height: BlaSpacings.m),
 
-                      // 2.2 Optionally display a list of past preferences
-                      SizedBox(
-                        height: 200, // Set a fixed height
-                        child: ListView.builder(
-                          shrinkWrap: true, // Fix ListView height issue
-                          physics: AlwaysScrollableScrollPhysics(),
-                          itemCount: pastPreferences.length,
-                          itemBuilder: (ctx, index) => RidePrefHistoryTile(
-                            ridePref: pastPreferences[index],
-                            onPressed: () =>
-                                _onRidePrefSelected(context, pastPreferences[index]),
+                        // 2.2 Display list of past preferences (latest to oldest)
+                        SizedBox(
+                          height: 200,
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: pastPreferences.length,
+                            itemBuilder: (ctx, index) => RidePrefHistoryTile(
+                              ridePref: pastPreferences[index],
+                              onPressed: () => _onRidePrefSelected(
+                                  context, pastPreferences[index]),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        );
+                ],
+              ),
+            ],
+          );
+        } else {
+
+          return const BlaError(message: 'No preferences available');
+        }
       },
-   );
+    );
   }
 }
